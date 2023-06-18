@@ -18,6 +18,8 @@ public class HelloApplication extends Application {
     private HelloController controller;
     private GridPane boardPane;
     private Label currentPlayerLabel;
+    private Label blackScoreLabel;
+    private Label whiteScoreLabel;
 
     public static void main(String[] args) {
         launch(args);
@@ -29,7 +31,7 @@ public class HelloApplication extends Application {
         root.setSpacing(10);
         root.setPadding(new Insets(10));
 
-        root.getChildren().addAll(createMenuPane(), createBoardPane());
+        root.getChildren().addAll(createMenuPane(), createBoardPane(), createScorePane());
 
         Scene scene = new Scene(root);
         primaryStage.setTitle("Reversi Game");
@@ -53,12 +55,12 @@ public class HelloApplication extends Application {
         difficultySlider.setBlockIncrement(1);
 
         singlePlayerButton.setOnAction(event -> {
-            controller = new HelloController();
+            controller = new HelloController(Boolean.TRUE);
             updateBoard();
         });
 
         multiPlayerButton.setOnAction(event -> {
-            controller = new HelloController();
+            controller = new HelloController(Boolean.FALSE);
             updateBoard();
         });
 
@@ -94,6 +96,19 @@ public class HelloApplication extends Application {
         return boardPane;
     }
 
+    private VBox createScorePane() {
+        VBox scorePane = new VBox();
+        scorePane.setSpacing(10);
+
+        Label blackLabel = new Label("Black Score:");
+        Label whiteLabel = new Label("White Score:");
+        blackScoreLabel = new Label("0");
+        whiteScoreLabel = new Label("0");
+
+        scorePane.getChildren().addAll(blackLabel, blackScoreLabel, whiteLabel, whiteScoreLabel);
+        return scorePane;
+    }
+
     private void handleMove(int row, int col) {
         if (controller != null && controller.isValidMove(row, col)) {
             controller.makeMove(row, col);
@@ -109,6 +124,23 @@ public class HelloApplication extends Application {
         char[][] board = controller.getBoard();
         currentPlayerLabel.setText("Current Player: " + controller.getCurrentPlayer());
 
+        // Reset the board colors
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                Circle circle = (Circle) boardPane.getChildren().get(i * 8 + j);
+                circle.setFill(Color.GREEN);
+            }
+        }
+
+        // Update valid move cells with blue dots
+        for (int[] move : controller.getPossibleMoves()) {
+            int row = move[0];
+            int col = move[1];
+            Circle circle = (Circle) boardPane.getChildren().get(row * 8 + col);
+            circle.setFill(Color.BLUE);
+        }
+
+        // Update the board with current player's pieces
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Circle circle = (Circle) boardPane.getChildren().get(i * 8 + j);
@@ -119,13 +151,31 @@ public class HelloApplication extends Application {
                 }
             }
         }
+
+        // Update the score labels
+        int blackScore = controller.getScore('B');
+        int whiteScore = controller.getScore('W');
+        blackScoreLabel.setText(String.valueOf(blackScore));
+        whiteScoreLabel.setText(String.valueOf(whiteScore));
     }
 
     private void showGameOverDialog() {
+        int blackScore = controller.getScore('B');
+        int whiteScore = controller.getScore('W');
+        String message;
+
+        if (blackScore > whiteScore) {
+            message = "Black wins!";
+        } else if (whiteScore > blackScore) {
+            message = "White wins!";
+        } else {
+            message = "It's a tie!";
+        }
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
         alert.setHeaderText(null);
-        alert.setContentText("Game Over!");
+        alert.setContentText("Game Over!\n\n" + message);
         alert.showAndWait();
     }
 }

@@ -1,5 +1,7 @@
 package com.example.othello1852;
 
+import javafx.scene.control.Alert;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -8,7 +10,7 @@ public class HelloController {
     private char[][] board;
     private char currentPlayer;
 
-    public HelloController() {
+    public HelloController(Boolean IsSinglePlayer) {
         board = new char[8][8];
         currentPlayer = 'B';
 
@@ -120,7 +122,15 @@ public class HelloController {
                 }
             }
         }
-
+        if (possibleMoves.isEmpty())
+        {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Game Over");
+            alert.setHeaderText(null);
+            alert.setContentText("Game Over, " + (getScore('B') > getScore('W') ? "B" : "W") + " wins!\nScore: W: " + getScore('W') + ", B: " + getScore('B'));
+            alert.showAndWait();
+            resetBoard();
+        }
         return possibleMoves;
     }
 
@@ -133,4 +143,36 @@ public class HelloController {
         }
         return null;
     }
+    public int getScore(char player) {
+        int score = 0;
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (board[i][j] == player) {
+                    score++;
+                }
+            }
+        }
+
+        return score;
+    }
+
+    public void resetBoard() {
+        currentPlayer = 'B';
+
+        // Reset the board
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = '-';
+            }
+        }
+
+        // Initial pieces
+        board[3][3] = 'W';
+        board[3][4] = 'B';
+        board[4][3] = 'B';
+        board[4][4] = 'W';
+    }
+
+
 }
