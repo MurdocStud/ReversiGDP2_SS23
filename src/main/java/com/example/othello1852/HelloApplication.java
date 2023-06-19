@@ -113,6 +113,11 @@ public class HelloApplication extends Application {
         if (controller != null && controller.isValidMove(row, col)) {
             controller.makeMove(row, col);
             updateBoard();
+            if (controller.isSinglePlayer)
+            {
+                controller.makeBotMove();
+                updateBoard();
+            }
 
             if (controller.isGameOver()) {
                 showGameOverDialog();

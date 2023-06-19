@@ -9,8 +9,10 @@ import java.util.Random;
 public class HelloController {
     private char[][] board;
     private char currentPlayer;
+    public boolean isSinglePlayer;
 
     public HelloController(Boolean IsSinglePlayer) {
+        setSinglePlayer(IsSinglePlayer);
         board = new char[8][8];
         currentPlayer = 'B';
 
@@ -36,6 +38,13 @@ public class HelloController {
         }
     }
 
+    public void makeBotMove()
+    {
+        int [] move = getRandomMove();
+        System.out.println(move[0]);
+        System.out.println(move[1]);
+        makeMove(move[0],move[1]);
+    }
     private void flipPieces(int row, int col) {
         int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
@@ -138,10 +147,9 @@ public class HelloController {
         List<int[]> possibleMoves = getPossibleMoves();
         Random random = new Random();
         if (!possibleMoves.isEmpty()) {
-            int[] randomMove = possibleMoves.get(random.nextInt(possibleMoves.size()));
-            return randomMove;
+            return possibleMoves.get(random.nextInt(possibleMoves.size()));
         }
-        return null;
+        return new int[0];  // Returns an empty array instead of null
     }
     public int getScore(char player) {
         int score = 0;
@@ -173,6 +181,9 @@ public class HelloController {
         board[4][3] = 'B';
         board[4][4] = 'W';
     }
-
-
+    public void setSinglePlayer(boolean singlePlayer)
+    {
+        this.isSinglePlayer = singlePlayer;
+        System.out.println(singlePlayer);
+    }
 }
