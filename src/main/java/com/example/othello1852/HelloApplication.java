@@ -30,45 +30,37 @@ public class HelloApplication extends Application {
         VBox root = new VBox();
         root.setSpacing(10);
         root.setPadding(new Insets(10));
-
-        root.getChildren().addAll(createMenuPane(), createBoardPane(), createScorePane());
-
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Reversi Game");
+        root.getChildren().addAll(createMenuPane(scene), createBoardPane(scene), createScorePane());
+        primaryStage.setTitle("Reversi Dayakli, Biermann GDP2 2023");
         primaryStage.setScene(scene);
         primaryStage.show();
+
     }
 
-    private VBox createMenuPane() {
+    private VBox createMenuPane(Scene scene) {
         VBox menuPane = new VBox();
         menuPane.setSpacing(10);
 
         Label modeLabel = new Label("Game Mode");
         Button singlePlayerButton = new Button("Single Player");
         Button multiPlayerButton = new Button("Multiplayer");
-        Slider difficultySlider = new Slider(0, 10, 5);
-
-        difficultySlider.setShowTickMarks(true);
-        difficultySlider.setShowTickLabels(true);
-        difficultySlider.setMajorTickUnit(2);
-        difficultySlider.setMinorTickCount(0);
-        difficultySlider.setBlockIncrement(1);
 
         singlePlayerButton.setOnAction(event -> {
             controller = new HelloController(Boolean.TRUE);
-            updateBoard();
+            updateBoard(scene);
         });
 
         multiPlayerButton.setOnAction(event -> {
             controller = new HelloController(Boolean.FALSE);
-            updateBoard();
+            updateBoard(scene);
         });
 
-        menuPane.getChildren().addAll(modeLabel, singlePlayerButton, multiPlayerButton, difficultySlider);
+        menuPane.getChildren().addAll(modeLabel, singlePlayerButton, multiPlayerButton);
         return menuPane;
     }
 
-    private GridPane createBoardPane() {
+    private GridPane createBoardPane(Scene scene) {
         boardPane = new GridPane();
         boardPane.setAlignment(Pos.CENTER);
         boardPane.setHgap(2);
@@ -84,7 +76,7 @@ public class HelloApplication extends Application {
                 int row = i;
                 int col = j;
 
-                circle.setOnMouseClicked(event -> handleMove(row, col));
+                circle.setOnMouseClicked(event -> handleMove(row, col, scene));
 
                 boardPane.add(circle, j, i);
             }
@@ -109,14 +101,14 @@ public class HelloApplication extends Application {
         return scorePane;
     }
 
-    private void handleMove(int row, int col) {
+    private void handleMove(int row, int col, Scene scene) {
         if (controller != null && controller.isValidMove(row, col)) {
             controller.makeMove(row, col);
-            updateBoard();
+            updateBoard(scene);
             if (controller.isSinglePlayer)
             {
                 controller.makeBotMove();
-                updateBoard();
+                updateBoard(scene);
             }
 
             if (controller.isGameOver()) {
@@ -125,9 +117,17 @@ public class HelloApplication extends Application {
         }
     }
 
-    private void updateBoard() {
+    private void updateBoard(Scene scene) {
         char[][] board = controller.getBoard();
         currentPlayerLabel.setText("Current Player: " + controller.getCurrentPlayer());
+        if(currentPlayerLabel.equals('W'))
+        {
+            scene.setFill(Color.BLACK);
+        }
+        else
+        {
+            scene.setFill(Color.WHITE);
+        }
 
         // Reset the board colors
         for (int i = 0; i < 8; i++) {

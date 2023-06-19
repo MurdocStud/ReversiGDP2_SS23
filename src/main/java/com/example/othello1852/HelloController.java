@@ -10,11 +10,12 @@ public class HelloController {
     private char[][] board;
     private char currentPlayer;
     public boolean isSinglePlayer;
+    private int PassCounter = 0;
 
     public HelloController(Boolean IsSinglePlayer) {
         setSinglePlayer(IsSinglePlayer);
         board = new char[8][8];
-        currentPlayer = 'B';
+        currentPlayer = 'W';
 
         // Initialize the board
         for (int i = 0; i < 8; i++) {
@@ -41,8 +42,7 @@ public class HelloController {
     public void makeBotMove()
     {
         int [] move = getRandomMove();
-        System.out.println(move[0]);
-        System.out.println(move[1]);
+        System.out.println(move[0]+" "+move[1]);
         makeMove(move[0],move[1]);
     }
     private void flipPieces(int row, int col) {
@@ -131,7 +131,7 @@ public class HelloController {
                 }
             }
         }
-        if (possibleMoves.isEmpty())
+        if (possibleMoves.isEmpty()&&PassCounter == 1)
         {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Game Over");
@@ -139,6 +139,15 @@ public class HelloController {
             alert.setContentText("Game Over, " + (getScore('B') > getScore('W') ? "B" : "W") + " wins!\nScore: W: " + getScore('W') + ", B: " + getScore('B'));
             alert.showAndWait();
             resetBoard();
+        }
+        else if(possibleMoves.isEmpty()&&PassCounter == 0)
+        {
+            PassCounter++;
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Pass");
+            alert.showAndWait();
+            System.out.println("Pass");
+            currentPlayer = (currentPlayer == 'B') ? 'W' : 'B';
         }
         return possibleMoves;
     }
@@ -184,6 +193,5 @@ public class HelloController {
     public void setSinglePlayer(boolean singlePlayer)
     {
         this.isSinglePlayer = singlePlayer;
-        System.out.println(singlePlayer);
     }
 }
