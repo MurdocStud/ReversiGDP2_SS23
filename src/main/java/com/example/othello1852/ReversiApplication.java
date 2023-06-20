@@ -7,15 +7,17 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
-public class HelloApplication extends Application {
-    private HelloController controller;
+//Deklaration der Variablen, die wir in der gesamten Klasse verwenden werden.
+//Das beinhaltet das Controller-Objekt, das den Zustand des Spiels verwaltet, die Pane (Panel), die das Spielbrett darstellt,
+//sowie Labels für den aktuellen Spieler und die Punktezahlen der schwarzen und weißen Spielers.
+public class ReversiApplication extends Application {
+    private ReversiController controller;
     private GridPane boardPane;
     private Label currentPlayerLabel;
     private Label blackScoreLabel;
@@ -25,20 +27,22 @@ public class HelloApplication extends Application {
         launch(args);
     }
 
+    //wird von JavaFX aufgerufen, wenn die Anwendung gestartet wird.
+    //Sie ist dafür verantwortlich, das Fenster (Stage) und die Szene (Scene) zu erstellen und alle Elemente darauf zu platzieren.
     @Override
     public void start(Stage primaryStage) {
         VBox root = new VBox();
         root.setSpacing(10);
         root.setPadding(new Insets(10));
         Scene scene = new Scene(root);
-        root.getChildren().addAll(createMenuPane(scene), createBoardPane(scene), createScorePane());
+        root.getChildren().addAll(createMenuPane(), createBoardPane(), createScorePane());
         primaryStage.setTitle("Reversi Dayakli, Biermann GDP2 2023");
         primaryStage.setScene(scene);
         primaryStage.show();
 
     }
-
-    private VBox createMenuPane(Scene scene) {
+    //erstellt das Menüfeld, das die Bedienelemente für das Spiel enthält, wie Start-, Stopp- und Reset-Buttons.
+    private VBox createMenuPane() {
         VBox menuPane = new VBox();
         menuPane.setSpacing(10);
 
@@ -47,20 +51,21 @@ public class HelloApplication extends Application {
         Button multiPlayerButton = new Button("Multiplayer");
 
         singlePlayerButton.setOnAction(event -> {
-            controller = new HelloController(Boolean.TRUE);
-            updateBoard(scene);
+            controller = new ReversiController(Boolean.TRUE);
+            updateBoard();
         });
 
         multiPlayerButton.setOnAction(event -> {
-            controller = new HelloController(Boolean.FALSE);
-            updateBoard(scene);
+            controller = new ReversiController(Boolean.FALSE);
+            updateBoard();
         });
 
         menuPane.getChildren().addAll(modeLabel, singlePlayerButton, multiPlayerButton);
         return menuPane;
     }
-
-    private GridPane createBoardPane(Scene scene) {
+    //erstellt das Spielfeld, das aus einem GridPane besteht.
+    //Jedes Feld im GridPane ist entweder leer oder enthält einen Spielstein (dargestellt als Circle).
+    private GridPane createBoardPane() {
         boardPane = new GridPane();
         boardPane.setAlignment(Pos.CENTER);
         boardPane.setHgap(2);
@@ -76,7 +81,7 @@ public class HelloApplication extends Application {
                 int row = i;
                 int col = j;
 
-                circle.setOnMouseClicked(event -> handleMove(row, col, scene));
+                circle.setOnMouseClicked(event -> handleMove(row, col));
 
                 boardPane.add(circle, j, i);
             }
@@ -87,7 +92,7 @@ public class HelloApplication extends Application {
 
         return boardPane;
     }
-
+    // Die Methode createScorePane() erstellt das Punktefeld, das die aktuellen Punktezahlen der Spieler anzeigt.
     private VBox createScorePane() {
         VBox scorePane = new VBox();
         scorePane.setSpacing(10);
@@ -100,15 +105,16 @@ public class HelloApplication extends Application {
         scorePane.getChildren().addAll(blackLabel, blackScoreLabel, whiteLabel, whiteScoreLabel);
         return scorePane;
     }
-
-    private void handleMove(int row, int col, Scene scene) {
+    // Die Methode handleMove() wird aufgerufen, wenn ein Spieler (oder der Bot) einen Zug macht.
+    // Sie überprüft, ob der Zug gültig ist, führt ihn aus und prüft, ob das Spiel vorbei ist.
+    private void handleMove(int row, int col) {
         if (controller != null && controller.isValidMove(row, col)) {
             controller.makeMove(row, col);
-            updateBoard(scene);
+            updateBoard();
             if (controller.isSinglePlayer)
             {
                 controller.makeBotMove();
-                updateBoard(scene);
+                updateBoard();
             }
 
             if (controller.isGameOver()) {
@@ -116,36 +122,23 @@ public class HelloApplication extends Application {
             }
         }
     }
-
-    private void updateBoard(Scene scene) {
+    // Die Methode updateBoard() wird aufgerufen, um das Spielfeld zu aktualisieren, nachdem ein Zug gemacht wurde.
+    // Sie aktualisiert die Spielsteine und die Punkteanzeige.
+    private void updateBoard() {
         char[][] board = controller.getBoard();
         currentPlayerLabel.setText("Current Player: " + controller.getCurrentPlayer());
-        if(currentPlayerLabel.equals('W'))
-        {
-            scene.setFill(Color.BLACK);
-        }
-        else
-        {
-            scene.setFill(Color.WHITE);
-        }
-
-        // Reset the board colors
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Circle circle = (Circle) boardPane.getChildren().get(i * 8 + j);
                 circle.setFill(Color.GREEN);
             }
         }
-
-        // Update valid move cells with blue dots
         for (int[] move : controller.getPossibleMoves()) {
             int row = move[0];
             int col = move[1];
             Circle circle = (Circle) boardPane.getChildren().get(row * 8 + col);
             circle.setFill(Color.BLUE);
         }
-
-        // Update the board with current player's pieces
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Circle circle = (Circle) boardPane.getChildren().get(i * 8 + j);
@@ -156,14 +149,13 @@ public class HelloApplication extends Application {
                 }
             }
         }
-
-        // Update the score labels
         int blackScore = controller.getScore('B');
         int whiteScore = controller.getScore('W');
         blackScoreLabel.setText(String.valueOf(blackScore));
         whiteScoreLabel.setText(String.valueOf(whiteScore));
     }
-
+    //wird aufgerufen, wenn das Spiel vorbei ist.
+    //zeigt einen Dialog an, der den Gewinner anzeigt und bietet die Möglichkeit, ein neues Spiel zu starten.
     private void showGameOverDialog() {
         int blackScore = controller.getScore('B');
         int whiteScore = controller.getScore('W');
